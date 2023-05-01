@@ -5,7 +5,7 @@ class TutorsController < ApplicationController
   end
 
   def show
-    @tutor = Tutor.find(params[:id])
+    @tutor = Tutor.find_by_user_id(params[:id])
     render_tutor(@tutor)
   end
 
@@ -23,8 +23,8 @@ class TutorsController < ApplicationController
   end
 
   def update
-    @tutor = Tutor.find(params[:id])
-    if @tutor.update(tutor_params)
+    @tutor = Tutor.find_by_user_id(params[:id])
+    if @tutor.update(tutor_params_update)
       @tutor.skills.clear
       @tutor.languages.clear
       @tutor.schools.clear
@@ -40,21 +40,44 @@ class TutorsController < ApplicationController
   end
 
   def destroy
-    tutor = Tutor.find(params[:id])
+    tutor = Tutor.find_by_user_id(params[:id])
     tutor.skills.clear
     tutor.languages.clear
     tutor.schools.clear
     tutor.jobs.clear
     tutor.destroy # Elimina el tutor
 
-    head :no_content
+    if tutor.destroyed?
+      render json: { message: "Tutor deleted" }, status: :ok
+    else
+      render json: { errors: tutor.errors }, status: :unprocessable_entity
+    end
   end
 
   private
   def tutor_params
     params.require(:tutor).permit(
+      :user_id,
       :name,
       :last_name,
+      :birth_place,
+      :birthdate,
+      :address,
+      :email,
+      :phone,
+      :description,
+      :photo
+    )
+  end
+
+  def tutor_params_update
+    params.require(:tutor).permit(
+      :name,
+      :last_name,
+      :birth_place,
+      :birthdate,
+      :address,
+      :email,
       :phone,
       :description,
       :photo
@@ -110,10 +133,13 @@ class TutorsController < ApplicationController
   def render_tutor(tutor)
     render json: tutor,
            include: {
-             skills: {},
-             languages: { through: :tutor_languages, include: :tutor_languages },
-             jobs: { through: :tutor_jobs, include: :tutor_jobs },
-             schools: { through: :tutor_schools, include: :tutor_schools }
+             skills: { only: %i[id name] },
+             languages: { only: %i[id name] },
+             tutor_languages: { only: %i[level language_id] },
+             jobs: { only: %i[id name] },
+             tutor_jobs: { only: %i[start_year end_year position job_id] },
+             schools: { only: %i[id name] },
+             tutor_schools: { only: %i[start_year end_year title school_id] }
            }
   end
 end
