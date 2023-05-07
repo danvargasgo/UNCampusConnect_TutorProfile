@@ -7,7 +7,7 @@
 
 ## Microservicio
 1. Ingresar al directorio \uncampusconnect_tutorprofile_ms
-2. docker build -t swarch2023i_ms .
+2. docker build -t uncampusconnect_tutorprofile_ms .
 3. docker run -p 3004:3004 -e DB_HOST=host.docker.internal -e DB_PORT=5432 -e DB_USER=postgres -e DB_PASSWORD=1234 -e DB_NAME=uncampusconnect_tutorprofile_db -e URL=0.0.0.0:3004 uncampusconnect_tutorprofile_ms
 4. docker exec -it <nombre_contenedor> bash
 5. rails db:create
